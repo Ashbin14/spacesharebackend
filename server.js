@@ -14,7 +14,17 @@ const userRoute=require('./routes/userRoute');
 const { userRegister } = require('./controllers/userController');
 
 app.use('/api',userRoute);
+const flatRoutes = require('./routes/flatRoute');
+app.use('/api',flatRoutes);
 
+const flatmateSearch=require('./routes/similarSearchRoute');
+app.use('/api',flatmateSearch);
+
+const formInputRoutes = require('./routes/formInputRoutes');
+app.use('/api/form-inputs', formInputRoutes);
+
+const userProfileRoutes = require('./routes/userprofileRoute');
+app.use('/api/profiles', userProfileRoutes);
 // const authRoute=require('./routes/authRoute');
 // app.use('/',authRoute);
 
