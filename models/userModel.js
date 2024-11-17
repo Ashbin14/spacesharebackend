@@ -7,11 +7,13 @@ const userSchema= new mongoose.Schema({
     },
     email:{
         type:String,
-        require:true
+        require:true,
+        match: /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/,
     },
     moblie:{
         type:String,
-        require:true
+        require:true,
+        match: /^[0-9]{10}$/, 
     },
     password:{
         type:String,
@@ -24,6 +26,24 @@ const userSchema= new mongoose.Schema({
     image:{
         type:String,
         require:false
+    },
+    userType:{
+        type:String,
+        enum: ['Tennent', 'Flatfinder','RoomMatefinder'],
+        default:'Tennent',
+        required:true,
+    },
+    personalityscore:{
+        type:Number,
+        required:function(){
+            return this.userType=='RoomMatefinder';
+        }
+    },
+    personalitytype:{
+        type:String,
+        required:function(){
+            return this.userType=='RoomMatefinder';
+        }
     }
 
 });
