@@ -17,7 +17,7 @@ exports.registerValidator=[
         minNumbers:1,
         minSymbols:1
     }),
-    check('image').custom((value,{req})=>{
+    check('image').optional().custom((value,{req})=>{
         if(req.file.mimetype=='image/jpeg'||file.mimetype=='image/jpeg'){
             return true;
           }else{

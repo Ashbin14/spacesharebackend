@@ -2,7 +2,7 @@ const User = require('../models/userModel');
 const FormInput = require('../models/formInputModel');
 const axios = require('axios'); // For ML API requests
 
-// Controller to calculate personality score and store form input
+
 exports.calculatePersonality = async (req, res) => {
     const { userId, formData } = req.body;
 
@@ -22,7 +22,7 @@ exports.calculatePersonality = async (req, res) => {
             });
         }
 
-        // Call the ML model API to calculate personality score and type
+       
         const mlModelUrl = "http://example-ml-model.com/predict"; // Replace with your actual ML model endpoint
         const response = await axios.post(mlModelUrl, { formData });
 
@@ -42,7 +42,7 @@ exports.calculatePersonality = async (req, res) => {
         });
         await formInput.save();
 
-        // Update the user's personality details in the database
+
         user.personalityscore = personalityScore;
         user.personalitytype = personalityType;
         await user.save();

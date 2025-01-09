@@ -1,77 +1,71 @@
-const User=require("../models/userModel");
-const bcrypt=require('bcrypt');
-const {validationResult}=require('express-validator');
+// userController.js
+const User = require('../models/User');
+const bcrypt = require('bcryptjs');
 
-const mailer=require('../helpers/mailer');
-const res = require("express/lib/response");
-const userRegister=async(req,res)=>{
+exports.getProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json(user);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
 
-    try{
-        const errors= validationResult(req);
-        if (!errors.isEmpty) {
-            return res.status(400).json({
-                success:false,
-                msg:error.message,
-                error:errors.array
-            });
-        }
-        const { name, email, moblie, password}=req.body;
+exports.updateProfile = async (req, res) => {
+  try {
+    const { firstName, lastName, email } = req.body;
     
-        const isExist=await User.findOne({email});
-
-        if(isExist){
-            return res.status(400).json({
-                success:false,
-                msg:"email already exits"
-            });
-        }
-
-        const hashPassword=await bcrypt.hash(password,10);
-
-        const user=new User({
-            name,
-            email,
-            moblie,
-            password:hashPassword,
-            image:'images/'+ req.file.filename
-        });
-        const userData= await user.save();
-        const msg='<p>Hi,'+ name +',<br> please<a href="http://127.0.0.1:3000/mail-verification?id='+userData._id+'> verify</a> your mail.</p>';
-        mailer.sendMail();
-        return res.status(200).json({
-            success:true,
-            msg:"regristed sucessfully happened",
-            user:userData
-        });
-
-        
-    }catch(error){
-        return res.status(400).json({
-            success:false,
-            msg:error.message
-        });
+    // Check if email already exists
+    const emailExists = await User.findOne({ 
+      email, 
+      _id: { $ne: req.user.id } 
+    });
+    
+    if (emailExists) {
+      return res.status(400).json({ message: 'Email already in use' });
     }
-}
 
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user.id,
+      {
+        firstName,
+        lastName,
+        email,
+      },
+      { new: true }
+    ).select('-password');
 
-const mailVerificaiton=async(req,res)=>{
-    try{
-        if(req.query.id==undefined){
-            return res.render('404');
-        }
-        const userData=await user.findOne({_id:req.query.id});
-        if(userData){
-        
-        }else{
-            return res.render('mail-verificaiton',{message:'user not found'});
-        }
+    res.json(updatedUser);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+exports.updatePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    
+    const user = await User.findById(req.user.id);
+    
+    // Verify current password
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Current password is incorrect' });
     }
-    catch(error){
-        console.log(error.message);
-        return res.render('404');
-    }
-}
-module.exports={
-    userRegister ,
-    mailVerificaiton
-}
+    
+    // Hash new password
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    
+    await user.save();
+    res.json({ message: 'Password updated successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
