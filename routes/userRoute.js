@@ -8,7 +8,7 @@ const { registerValidator } = require("../helpers/validation");
 const router = express();
 
 // Enable CORS for all origins or specific origins
-router.use(cors({ origin: "http://localhost:5173" })); // Replace with your frontend origin if needed
+router.use(cors({ origin: "http://localhost:5173" }));
 router.use(express.json());
 
 // Multer configuration for file uploads
