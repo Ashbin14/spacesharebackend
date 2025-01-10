@@ -1,7 +1,9 @@
 import jwt from 'jsonwebtoken';
-import { User } from '../models/User.js';
+//import {User}  from '../models/user.js';
+//const User = require('../models/user.js');
+import User from '../models/user.js';
 
-export const authenticate = async (req, res, next) => {
+const authenticate = async (req, res, next) => {
   try {
     const token = req.header('Authorization')?.replace('Bearer ', '');
     if (!token) {
@@ -25,3 +27,5 @@ export const authenticate = async (req, res, next) => {
     res.status(401).json({ error: 'Please authenticate.' });
   }
 };
+
+export default authenticate;

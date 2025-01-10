@@ -1,6 +1,6 @@
 import express from 'express';
 import { spaceController } from '../controllers/spaceController.js';
-import { authenticate } from '../middleware/auth.js';
+import  authenticate  from '../middleware/auth.js';
 import { upload } from '../config/multerconfig.js';
 
 const router = express.Router();
@@ -27,3 +27,5 @@ router.delete(
   authenticate,
   spaceController.deleteSpace
 );
+
+export default router;

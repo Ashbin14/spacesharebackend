@@ -1,8 +1,7 @@
-// userController.js
-const User = require('../models/User');
-const bcrypt = require('bcryptjs');
+import User from '../models/user.js';  // Import User model
+import bcrypt from 'bcryptjs';  // Import bcrypt for password hashing
 
-exports.getProfile = async (req, res) => {
+const getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password');
     if (!user) {
@@ -15,7 +14,7 @@ exports.getProfile = async (req, res) => {
   }
 };
 
-exports.updateProfile = async (req, res) => {
+const updateProfile = async (req, res) => {
   try {
     const { firstName, lastName, email } = req.body;
     
@@ -46,7 +45,7 @@ exports.updateProfile = async (req, res) => {
   }
 };
 
-exports.updatePassword = async (req, res) => {
+const updatePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
     
@@ -69,3 +68,5 @@ exports.updatePassword = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+export default { getProfile, updateProfile, updatePassword };

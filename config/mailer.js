@@ -1,4 +1,6 @@
-const nodemailer = require('nodemailer');
+import { model } from 'mongoose';  // ES module import
+import nodemailer from 'nodemailer';  // ES module import
+
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -7,4 +9,6 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-module.exports = transporter;
+//module.exports = transporter;
+const transporter1 = nodemailer.createTransport(transporter);
+export default transporter1;

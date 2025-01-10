@@ -2,7 +2,8 @@
   "name": "spaceshare-backend",
   "version": "1.0.0",
   "description": "backend of space sharing portal named spaceshare",
-  "main": "index.js",
+  "main": "server.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
@@ -13,6 +14,9 @@
     "api": "^5.0.5",
     "axios": "^1.7.7",
     "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
     "domain": "^0.0.1",
     "dotenv": "^16.4.5",
     "ejs": "^3.1.10",
