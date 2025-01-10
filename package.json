@@ -4,6 +4,7 @@
   "description": "backend of space sharing portal named spaceshare",
   "main": "index.js",
   "scripts": {
+    "dev": "nodemon server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "AshbinThapa",
@@ -12,6 +13,7 @@
     "api": "^5.0.5",
     "axios": "^1.7.7",
     "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
     "domain": "^0.0.1",
     "dotenv": "^16.4.5",
     "ejs": "^3.1.10",

@@ -1,35 +1,35 @@
-const express=require('express');
-const router=express();
+const express = require("express");
+const cors = require("cors");
+const path = require("path");
+const multer = require("multer");
+const userController = require("../controllers/userController");
+const { registerValidator } = require("../helpers/validation");
 
+const router = express();
+
+// Enable CORS for all origins or specific origins
+router.use(cors({ origin: "http://localhost:5173" })); // Replace with your frontend origin if needed
 router.use(express.json());
 
-const path=require('path');
-const multer=require("multer");
-
-const storage =multer.diskStorage({
-    destination:function(req,files,cb){
-            cb(null,path.join(__dirname,'../public/images'));
-        
-        
-    },
-    filename:function(req,file,cb){
-        const name = Date.now()+"-"+file.originalname;
-        cb(null,name);
-    }
+// Multer configuration for file uploads
+const storage = multer.diskStorage({
+  destination: function (req, files, cb) {
+    cb(null, path.join(__dirname, "../public/images"));
+  },
+  filename: function (req, file, cb) {
+    const name = Date.now() + "-" + file.originalname;
+    cb(null, name);
+  },
 });
 
-const upload=multer({
-    storage:storage,
-    
-});
+const upload = multer({ storage: storage });
 
-const userController=require('../controllers/userController');
-
-const{registerValidator,sendMailVerificaitonValidator}=require('../helpers/validation');
-const res = require('express/lib/response');
-
-router.post('/register',upload.single('image'),registerValidator,userController.userRegister);
-
-//router.post('/send-mail-verificaiton',sendMailVerificaitonValidator,userController.sendMailVerificaiton);
+// Routes
+router.post(
+  "/register",
+  upload.single("image"),
+  registerValidator,
+  userController.userRegister
+);
 
 module.exports = router;
