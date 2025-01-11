@@ -58,6 +58,7 @@ const login = async (req, res) => {
 const register = async (req, res) => {
   try {
     const { firstName, lastName, email, password } = req.body;
+
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({
@@ -65,29 +66,34 @@ const register = async (req, res) => {
         message: 'User already exists'
       });
     }
+
     const user = new User({
       firstName,
       lastName,
       email,
-      password
+      password,
+      verificationToken: crypto.randomBytes(32).toString('hex'), // Generate token
+      verificationTokenExpires: Date.now() + 3600000, // Token expires in 1 hour
     });
 
     await user.save();
-    const token = jwt.sign(
-      { id: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: '1d' }
-    );
+
+    // Send verification email with the token
+    const verificationLink = `${process.env.BASE_URL}/verifyMail?token=${user.verificationToken}`;
+    
+    const mailOptions = {
+      from: 'no-reply@yourapp.com',
+      to: user.email,
+      subject: 'Email Verification',
+      text: `Please verify your email by clicking the following link: ${verificationLink}`
+    };
+
+    // Send email using transporter (your mail config)
+    await transporter.sendMail(mailOptions);
 
     res.status(201).json({
       status: 'success',
-      data: {
-        user: {
-          id: user._id,
-          email: user.email
-        },
-        token
-      }
+      message: 'Registration successful, please check your email to verify your account'
     });
 
   } catch (error) {
@@ -97,28 +103,6 @@ const register = async (req, res) => {
       message: 'Server error'
     });
   }
-};
-
-const verifyMail = async (req, res) => {
-  const { token } = req.query;
-
-  // Find the user by verification token
-  const user = await User.findOne({
-    verificationToken: token,
-    verificationTokenExpires: { $gt: Date.now() }, // Check if token has expired
-  });
-
-  if (!user) {
-    return res.status(400).json({ message: 'Invalid or expired token' });
-  }
-
-  user.isVerified = true;
-  user.verificationToken = undefined;
-  user.verificationTokenExpires = undefined;
-
-  await user.save();
-
-  res.status(200).json({ message: 'Email successfully verified' });
 };
 
 // Auth middleware
@@ -144,4 +128,4 @@ const auth = async (req, res, next) => {
   }
 };
 
-export default { login, register, verifyMail, auth };
+export default { login, register, auth };

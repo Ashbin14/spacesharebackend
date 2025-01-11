@@ -1,14 +1,11 @@
-import { model } from 'mongoose';  // ES module import
-import nodemailer from 'nodemailer';  // ES module import
+import nodemailer from 'nodemailer';
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  service: 'gmail', // using Gmail SMTP service
   auth: {
-    user: process.env.EMAIL_USER, // Your email address
-    pass: process.env.EMAIL_PASS  // Your email password
+    user: process.env.EMAIL_USER,  // Your Gmail address
+    pass: process.env.EMAIL_PASS   // Your Gmail password (or app password)
   }
 });
 
-//module.exports = transporter;
-const transporter1 = nodemailer.createTransport(transporter);
-export default transporter1;
+export default transporter;
