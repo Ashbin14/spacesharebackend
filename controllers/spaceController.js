@@ -9,7 +9,7 @@ const createSpace = async (req, res) => {
     const images = req.files.map(file => file.path);
 
     const space = new Space({
-      user: req.user.id,  // This will be set from the auth middleware
+      user: req.user.user_id, 
       title,
       location,
       monthlyRent,

@@ -11,7 +11,6 @@ const storage = multer.diskStorage({
   }
 });
 
-// File filter to allow only images (jpeg, jpg, png, gif)
 const fileFilter = (req, file, cb) => {
   const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
   if (allowedTypes.includes(file.mimetype)) {
@@ -21,7 +20,6 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// Create the multer upload middleware with the defined storage and file filter
 const upload = multer({
   storage,
   limits: { fileSize: 5 * 1024 * 1024 }, // Limit the file size to 5MB

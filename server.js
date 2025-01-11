@@ -30,7 +30,7 @@ mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
 
 
 app.use('/api/auth', authRoutes);
-app.use('/uploads', express.static('uploads')); 
+app.use('/uploads/', express.static('uploads')); 
 
 
 app.use('/api', spaceRoutes);
