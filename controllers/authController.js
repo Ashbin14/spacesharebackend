@@ -1,13 +1,13 @@
-import User from '../models/user.js';  // Import user model 
-import jwt from 'jsonwebtoken';  // Import jwt only once
-import transporter from '../config/mailer.js';  // Import mail transporter
-import dotenv from 'dotenv';  // Import dotenv for environment variables
-import bcrypt from 'bcryptjs';  // Import bcrypt for password hashing
-import crypto from 'crypto';  // Import crypto for generating random tokens
-import Token from '../models/token.js';
-import auth from '../middleware/auth.js';
+import User from "../models/user.js"; // Import user model
+import jwt from "jsonwebtoken"; // Import jwt only once
+import transporter from "../config/mailer.js"; // Import mail transporter
+import dotenv from "dotenv"; // Import dotenv for environment variables
+import bcrypt from "bcryptjs"; // Import bcrypt for password hashing
+import crypto from "crypto"; // Import crypto for generating random tokens
+import Token from "../models/token.js";
+import auth from "../middleware/auth.js";
 
-dotenv.config();  
+dotenv.config();
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -15,8 +15,8 @@ const login = async (req, res) => {
     // Validate input
     if (!email || !password) {
       return res.status(400).json({
-        status: 'error',
-        message: 'Please provide email and password'
+        status: "error",
+        message: "Please provide email and password",
       });
     }
 
@@ -24,8 +24,8 @@ const login = async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({
-        status: 'error',
-        message: 'Invalid credentials'
+        status: "error",
+        message: "Invalid credentials",
       });
     }
 
@@ -33,38 +33,35 @@ const login = async (req, res) => {
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res.status(401).json({
-        status: 'error',
-        message: 'Invalid credentials'
+        status: "error",
+        message: "Invalid credentials",
       });
     }
 
     // Generate token
-    const token = jwt.sign(
-      { id: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: '1d' }
-    );
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
 
     // Send response
     res.json({
-      status: 'success',
+      status: "success",
       data: {
         user: {
           id: user._id,
-          email: user.email
+          email: user.email,
         },
-        token
-      }
+        token,
+      },
     });
-
   } catch (error) {
-    console.error('Login error:', error);
+    console.error("Login error:", error);
     res.status(500).json({
-      status: 'error',
-      message: 'Server error'
+      status: "error",
+      message: "Server error",
     });
   }
-}
+};
 // const login = async (req, res) => {
 //   try {
 //     const { email, password } = req.body;
@@ -115,8 +112,8 @@ const register = async (req, res) => {
     // Validate required fields
     if (!firstName || !lastName || !email || !password) {
       return res.status(400).json({
-        status: 'error',
-        message: 'All fields are required'
+        status: "error",
+        message: "All fields are required",
       });
     }
 
@@ -124,8 +121,8 @@ const register = async (req, res) => {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({
-        status: 'error',
-        message: 'User already exists'
+        status: "error",
+        message: "User already exists",
       });
     }
 
@@ -136,23 +133,22 @@ const register = async (req, res) => {
       firstName,
       lastName,
       email,
-      password
+      password,
     });
 
     const result = await user.save();
     result.password = undefined; // Ensure password is not returned in the response
 
     res.status(201).json({
-      status: 'success',
-      message: 'Registration successful',
+      status: "success",
+      message: "Registration successful",
       result,
     });
-
   } catch (error) {
-    console.error('Registration error:', error);
+    console.error("Registration error:", error);
     res.status(500).json({
-      status: 'error',
-      message: 'Server error'
+      status: "error",
+      message: "Server error",
     });
   }
 };
@@ -161,10 +157,10 @@ const logout = async (req, res) => {
     const token = req.token;
     await Token.findOneAndDelete({ token });
 
-    res.status(200).json({ message: 'Logout successful' });
+    res.status(200).json({ message: "Logout successful" });
   } catch (error) {
-    console.error('Logout error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Logout error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -172,7 +168,7 @@ const logout = async (req, res) => {
 // const auth = async (req, res, next) => {
 //   try {
 //     const token = req.header('Authorization')?.replace('Bearer ', '');
-    
+
 //     if (!token) {
 //       return res.status(401).json({
 //         status: 'error',
@@ -182,7 +178,7 @@ const logout = async (req, res) => {
 //     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 //     req.user = decoded;
 //     next();
-    
+
 //   } catch (error) {
 //     res.status(401).json({
 //       status: 'error',
@@ -191,4 +187,4 @@ const logout = async (req, res) => {
 //   }
 // };
 
-export default { login, register, logout};
+export default { login, register, logout };
