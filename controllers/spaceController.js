@@ -56,7 +56,7 @@ const updateSpace = async (req, res) => {
     const { title, location, monthlyRent, roomType, description, amenities, flatmatePreferences } = req.body;
     
     // Handle images
-    const images = req.files ? req.files.map(file => file.path) : [];
+    const images = req.files ? req.files.map(file => file.path()) : [];
 
     const updatedSpace = await Space.findByIdAndUpdate(
       req.params.id,

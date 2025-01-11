@@ -8,50 +8,105 @@ import Token from '../models/token.js';
 import auth from '../middleware/auth.js';
 
 dotenv.config();  
-
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Check if user exists
+    // Validate input
+    if (!email || !password) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Please provide email and password'
+      });
+    }
+
+    // Find user
     const user = await User.findOne({ email });
-
     if (!user) {
-      console.log('No user found with email:', email);  // Debugging: Check email lookup
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({
+        status: 'error',
+        message: 'Invalid credentials'
+      });
     }
 
-    // Debugging: Check the user object
-    console.log('User found:', user);
-
-    // Validate that password is provided
-    if (!password) {
-      return res.status(400).json({ message: 'Password is required' });
+    // Check password
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      return res.status(401).json({
+        status: 'error',
+        message: 'Invalid credentials'
+      });
     }
 
-    // Compare password (hash comparison)
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      console.log('Invalid password attempt for email:', email);  // Debugging: Password mismatch
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
+    // Generate token
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: '1d' }
+    );
 
-    // Generate JWT token
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
-
-    // Store the token in the Token collection
-    await Token.create({ userId: user._id, token });
-    res.status(200).json({
-      message: 'Login successful',
-      user: { _id: user._id, firstName: user.firstName, lastName: user.lastName, email: user.email },
-      token,
+    // Send response
+    res.json({
+      status: 'success',
+      data: {
+        user: {
+          id: user._id,
+          email: user.email
+        },
+        token
+      }
     });
 
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({
+      status: 'error',
+      message: 'Server error'
+    });
   }
-};
+}
+// const login = async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
+
+//     // Check if user exists
+//     const user = await User.findOne({ email });
+
+//     if (!user) {
+//       console.log('No user found with email:', email);  // Debugging: Check email lookup
+//       return res.status(401).json({ message: 'Invalid credentials' });
+//     }
+
+//     // Debugging: Check the user object
+//     console.log('User found:', user);
+
+//     // Validate that password is provided
+//     if (!password) {
+//       return res.status(400).json({ message: 'Password is required' });
+//     }
+
+//     const isPasswordValid = await user.method.authcomparePassword(password);
+//     if (!isPasswordValid) {
+//       console.log('Invalid password attempt for email:', email);  // Debugging: Password mismatch
+//       return res.status(401).json({ message: 'Invalid credentials' });
+//     }
+
+//     // Generate JWT token
+//     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+
+//     // Store the token in the Token collection
+//     await Token.create({ userId: user._id, token });
+//     res.status(200).json({
+//       message: 'Login successful',
+//       user: { _id: user._id, firstName: user.firstName, lastName: user.lastName, email: user.email },
+//       token,
+//     });
+
+//   } catch (error) {
+//     console.error('Login error:', error);
+//     res.status(500).json({ message: 'Server error' });
+//   }
+// };
 
 const register = async (req, res) => {
   try {
@@ -75,18 +130,17 @@ const register = async (req, res) => {
     }
 
     // Hash the password
-   // const hashedPassword = await bcrypt.hash(password);
 
     // Create a new user
     const user = new User({
       firstName,
       lastName,
       email,
-      password 
+      password
     });
 
     const result = await user.save();
-    //result.password = undefined; // Ensure password is not returned in the response
+    result.password = undefined; // Ensure password is not returned in the response
 
     res.status(201).json({
       status: 'success',
