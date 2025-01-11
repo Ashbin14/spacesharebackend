@@ -26,10 +26,20 @@ const login = async (req, res) => {
   }
 };
 
+
 const register = async (req, res) => {
   try {
     const { firstName, lastName, email, password } = req.body;
 
+    // Validate required fields
+    if (!firstName || !lastName || !email || !password) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'All fields are required'
+      });
+    }
+
+    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({
@@ -38,17 +48,24 @@ const register = async (req, res) => {
       });
     }
 
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create a new user
     const user = new User({
       firstName,
       lastName,
       email,
-      password, 
+      password: hashedPassword, 
     });
 
+    const result = await user.save();
+    result.password = undefined; // Ensure password is not returned in the response
 
     res.status(201).json({
       status: 'success',
-      message: 'Registration successful'
+      message: 'Registration successful',
+      result,
     });
 
   } catch (error) {
