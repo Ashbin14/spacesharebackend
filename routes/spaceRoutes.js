@@ -6,8 +6,7 @@ import { upload } from '../config/multerconfig.js';
 const router = express.Router();
 
 router.post(
-  '/spaces',
-  authenticate,
+  '/spaces',                                 
   upload.array('images', 5),
   spaceController.createSpace
 );

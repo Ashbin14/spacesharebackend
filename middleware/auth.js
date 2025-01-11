@@ -1,27 +1,31 @@
-import jwt from 'jsonwebtoken';
-import { User } from '../models/User.js';
+const jwt = require("jsonwebtoken");
+const { User } = require("../models/User.js");
 
-export const authenticate = async (req, res, next) => {
+module.exports.authenticate = async (req, res, next) => {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
+    const token = req.header("Authorization")?.replace("Bearer ", "");
     if (!token) {
-      throw new Error();
+      return res
+        .status(401)
+        .json({ error: "Authentication token is required." });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findOne({ 
+    const user = await User.findOne({
       _id: decoded._id,
-      isVerified: true 
+      isVerified: true,
     });
 
     if (!user) {
-      throw new Error();
+      return res.status(401).json({ error: "User not found or not verified." });
     }
 
     req.user = user;
     req.token = token;
+
     next();
   } catch (error) {
-    res.status(401).json({ error: 'Please authenticate.' });
+    console.error(error);
+    res.status(401).json({ error: "Please authenticate." });
   }
 };
