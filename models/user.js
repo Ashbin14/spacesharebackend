@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-// Pre-save middleware for hashing password
+//Pre-save middleware for hashing password
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   try {
@@ -38,7 +38,7 @@ userSchema.pre('save', async function (next) {
   }
 });
 
-// Instance method to compare passwords
+//Instance method to compare passwords
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
