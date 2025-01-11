@@ -3,13 +3,16 @@ import path from 'path';
 
 const createSpace = async (req, res) => {
   try {
+    if (!req.user || !req.user.userId) {
+      return res.status(401).json({ error: 'User not authenticated.' });
+    }
+    console.log(req.user);
     const { title, location, monthlyRent, roomType, description, amenities, flatmatePreferences } = req.body;
-    
-    // Get file paths for uploaded images (Multer will save them to the 'uploads/' directory)
+    const userId=req.user.userId;
     const images = req.files.map(file => file.path);
 
     const space = new Space({
-      user: req.user.user_id, 
+      userId,
       title,
       location,
       monthlyRent,

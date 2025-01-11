@@ -2,10 +2,10 @@ import mongoose from 'mongoose';
 import  User from './user.js'
 
 const spaceSchema = new mongoose.Schema({
-  user: {
+  userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: true,
   },
   title: {
     type: String,
@@ -17,11 +17,11 @@ const spaceSchema = new mongoose.Schema({
   },
   monthlyRent: {
     type: Number,
-    required: true
+   required: true
   },
   roomType: {
     type: String,
-    required: true,
+   required: true,
     enum: ['private', 'shared', 'studio']
   },
   description: {
