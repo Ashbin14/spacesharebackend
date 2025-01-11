@@ -4,54 +4,25 @@ import transporter from '../config/mailer.js';  // Import mail transporter
 import dotenv from 'dotenv';  // Import dotenv for environment variables
 import bcrypt from 'bcryptjs';  // Import bcrypt for password hashing
 import crypto from 'crypto';  // Import crypto for generating random tokens
+import Token from '../models/token.js';
+import auth from '../middleware/auth.js';
 
-dotenv.config();  // Load environment variables from .env file
+dotenv.config();  
 
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Please provide email and password'
-      });
-    }
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(401).json({
-        status: 'error',
-        message: 'Invalid credentials'
-      });
-    }
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) {
-      return res.status(401).json({
-        status: 'error',
-        message: 'Invalid credentials'
-      });
-    }
-    const token = jwt.sign(
-      { id: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: '1d' }
-    );
-    res.json({
-      status: 'success',
-      data: {
-        user: {
-          id: user._id,
-          email: user.email
-        },
-        token
-      }
-    });
 
+    const user = await User.findOne({ email });
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+    await Token.create({ userId: user._id, token });
+    res.status(200).json({ message: 'Login successful',email,password, token });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({
-      status: 'error',
-      message: 'Server error'
-    });
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
@@ -71,29 +42,13 @@ const register = async (req, res) => {
       firstName,
       lastName,
       email,
-      password,
-      verificationToken: crypto.randomBytes(32).toString('hex'), // Generate token
-      verificationTokenExpires: Date.now() + 3600000, // Token expires in 1 hour
+      password, 
     });
 
-    await user.save();
-
-    // Send verification email with the token
-    const verificationLink = `${process.env.BASE_URL}/verifyMail?token=${user.verificationToken}`;
-    
-    const mailOptions = {
-      from: 'no-reply@yourapp.com',
-      to: user.email,
-      subject: 'Email Verification',
-      text: `Please verify your email by clicking the following link: ${verificationLink}`
-    };
-
-    // Send email using transporter (your mail config)
-    await transporter.sendMail(mailOptions);
 
     res.status(201).json({
       status: 'success',
-      message: 'Registration successful, please check your email to verify your account'
+      message: 'Registration successful'
     });
 
   } catch (error) {
@@ -104,28 +59,39 @@ const register = async (req, res) => {
     });
   }
 };
-
-// Auth middleware
-const auth = async (req, res, next) => {
+const logout = async (req, res) => {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    
-    if (!token) {
-      return res.status(401).json({
-        status: 'error',
-        message: 'No token, authorization denied'
-      });
-    }
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
-    next();
-    
+    const token = req.token;
+    await Token.findOneAndDelete({ token });
+
+    res.status(200).json({ message: 'Logout successful' });
   } catch (error) {
-    res.status(401).json({
-      status: 'error',
-      message: 'Token is not valid'
-    });
+    console.error('Logout error:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
-export default { login, register, auth };
+// Auth middleware
+// const auth = async (req, res, next) => {
+//   try {
+//     const token = req.header('Authorization')?.replace('Bearer ', '');
+    
+//     if (!token) {
+//       return res.status(401).json({
+//         status: 'error',
+//         message: 'No token, authorization denied'
+//       });
+//     }
+//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+//     req.user = decoded;
+//     next();
+    
+//   } catch (error) {
+//     res.status(401).json({
+//       status: 'error',
+//       message: 'Token is not valid'
+//     });
+//   }
+// };
+
+export default { login, register, logout};

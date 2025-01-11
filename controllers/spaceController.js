@@ -1,142 +1,105 @@
-import { Space } from '../models/space.js';
-import fs from 'fs/promises';
+import { Space } from '../models/space.js';  // Assuming Space model exists
 import path from 'path';
 
-export const spaceController = {
-  createSpace: async (req, res) => {
-    try {
-      const {
-        title,
-        location,
-        monthlyRent,
-        roomType,
-        description,
-        amenities,
-        flatmatePreferences
-      } = req.body;
+const createSpace = async (req, res) => {
+  try {
+    const { title, location, monthlyRent, roomType, description, amenities, flatmatePreferences } = req.body;
+    
+    // Get file paths for uploaded images (Multer will save them to the 'uploads/' directory)
+    const images = req.files.map(file => file.path);
 
-      // Handle file uploads
-      const images = req.files.map(file => file.filename);
+    const space = new Space({
+      user: req.user.id,  // This will be set from the auth middleware
+      title,
+      location,
+      monthlyRent,
+      roomType,
+      description,
+      images,
+      amenities,
+      flatmatePreferences
+    });
 
-      const space = new Space({
-        user: req.user._id,
+    await space.save();
+    res.status(201).json({ status: 'success', data: space });
+  } catch (error) {
+    console.error('Create space error:', error);
+    res.status(500).json({ status: 'error', message: 'Server error' });
+  }
+};
+
+const getSpaces = async (req, res) => {
+  try {
+    const spaces = await Space.find({ user: req.user.id });
+    res.status(200).json({ status: 'success', data: spaces });
+  } catch (error) {
+    console.error('Get spaces error:', error);
+    res.status(500).json({ status: 'error', message: 'Server error' });
+  }
+};
+
+const getSpaceById = async (req, res) => {
+  try {
+    const space = await Space.findById(req.params.id);
+    if (!space) {
+      return res.status(404).json({ status: 'error', message: 'Space not found' });
+    }
+    res.status(200).json({ status: 'success', data: space });
+  } catch (error) {
+    console.error('Get space by ID error:', error);
+    res.status(500).json({ status: 'error', message: 'Server error' });
+  }
+};
+
+const updateSpace = async (req, res) => {
+  try {
+    const { title, location, monthlyRent, roomType, description, amenities, flatmatePreferences } = req.body;
+    
+    // Handle images
+    const images = req.files ? req.files.map(file => file.path) : [];
+
+    const updatedSpace = await Space.findByIdAndUpdate(
+      req.params.id,
+      {
         title,
         location,
         monthlyRent,
         roomType,
         description,
         images,
-        amenities: JSON.parse(amenities),
-        flatmatePreferences: JSON.parse(flatmatePreferences)
-      });
+        amenities,
+        flatmatePreferences
+      },
+      { new: true }
+    );
 
-      await space.save();
-      res.status(201).json(space);
-    } catch (error) {
-      // Clean up uploaded files if there's an error
-      if (req.files) {
-        await Promise.all(
-          req.files.map(file => 
-            fs.unlink(path.join('uploads/spaces', file.filename))
-          )
-        );
-      }
-      res.status(400).json({ error: error.message });
+    if (!updatedSpace) {
+      return res.status(404).json({ status: 'error', message: 'Space not found' });
     }
-  },
-
-  getSpaces: async (req, res) => {
-    try {
-      const spaces = await Space.find()
-        .populate('user', 'firstName lastName')
-        .sort({ createdAt: -1 });
-      res.json(spaces);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  },
-
-  getSpaceById: async (req, res) => {
-    try {
-      const space = await Space.findById(req.params.id)
-        .populate('user', 'firstName lastName');
-      if (!space) {
-        return res.status(404).json({ error: 'Space not found' });
-      }
-      res.json(space);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  },
-
-  updateSpace: async (req, res) => {
-    const updates = Object.keys(req.body);
-    const allowedUpdates = [
-      'title', 'location', 'monthlyRent', 'roomType',
-      'description', 'amenities', 'flatmatePreferences'
-    ];
-
-    try {
-      const space = await Space.findOne({
-        _id: req.params.id,
-        user: req.user._id
-      });
-
-      if (!space) {
-        return res.status(404).json({ error: 'Space not found' });
-      }
-
-      // Handle new image uploads
-      if (req.files?.length) {
-        // Delete old images
-        await Promise.all(
-          space.images.map(image => 
-            fs.unlink(path.join('uploads/spaces', image))
-          )
-        );
-        space.images = req.files.map(file => file.filename);
-      }
-
-      // Update other fields
-      updates.forEach(update => {
-        if (allowedUpdates.includes(update)) {
-          if (update === 'amenities' || update === 'flatmatePreferences') {
-            space[update] = JSON.parse(req.body[update]);
-          } else {
-            space[update] = req.body[update];
-          }
-        }
-      });
-
-      await space.save();
-      res.json(space);
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  },
-
-  deleteSpace: async (req, res) => {
-    try {
-      const space = await Space.findOne({
-        _id: req.params.id,
-        user: req.user._id
-      });
-
-      if (!space) {
-        return res.status(404).json({ error: 'Space not found' });
-      }
-
-      // Delete associated images
-      await Promise.all(
-        space.images.map(image => 
-          fs.unlink(path.join('uploads/spaces', image))
-        )
-      );
-
-      await space.remove();
-      res.json({ message: 'Space deleted successfully' });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
+    res.status(200).json({ status: 'success', data: updatedSpace });
+  } catch (error) {
+    console.error('Update space error:', error);
+    res.status(500).json({ status: 'error', message: 'Server error' });
   }
+};
+
+const deleteSpace = async (req, res) => {
+  try {
+    const space = await Space.findByIdAndDelete(req.params.id);
+    if (!space) {
+      return res.status(404).json({ status: 'error', message: 'Space not found' });
+    }
+    res.status(200).json({ status: 'success', message: 'Space deleted successfully' });
+  } catch (error) {
+    console.error('Delete space error:', error);
+    res.status(500).json({ status: 'error', message: 'Server error' });
+  }
+};
+
+export const spaceController = {
+  createSpace,
+  getSpaces,
+  getSpaceById,
+  updateSpace,
+  deleteSpace
 };

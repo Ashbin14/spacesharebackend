@@ -1,8 +1,8 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
-//const bcrypt = require('bcryptjs');
 
-const userSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema(
+  {
     firstName: {
       type: String,
       required: true,
@@ -20,23 +20,14 @@ const userSchema = new mongoose.Schema({
       type: String,
       required: true,
     },
-    isVerified: {
-      type: Boolean,
-      default: false,
-    },
-    verificationToken: {
-      type: String,
-      default: null,
-    },
-    verificationTokenExpires: {
-      type: Date,
-      default: null,
-    },
-  }, {
-    timestamps: true,
-  });
-  
-userSchema.pre('save', async function(next) {
+  },
+  {
+    timestamps: true, // Automatically manage createdAt and updatedAt fields
+  }
+);
+
+// Pre-save middleware for hashing password
+userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   try {
     const salt = await bcrypt.genSalt(10);
@@ -47,9 +38,10 @@ userSchema.pre('save', async function(next) {
   }
 });
 
-userSchema.methods.comparePassword = async function(candidatePassword) {
+// Instance method to compare passwords
+userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
- const user=mongoose.model("User",userSchema);
- export default user;
+const User = mongoose.model('User', userSchema);
+export default User;
