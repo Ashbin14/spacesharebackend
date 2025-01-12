@@ -6,6 +6,7 @@ import authRoutes from "./routes/auth.js";
 import userProfie from "./routes/userRoute.js";
 import spaceRoutes from "./routes/spaceRoutes.js";
 import multer from "multer";
+import mbtiRoutes from "./routes/mibtRoute.js";
 
 dotenv.config();
 
@@ -34,18 +35,12 @@ mongoose
 
 app.use("/api/auth", authRoutes);
 app.use("/uploads/", express.static("uploads"));
-
-app.use("/api", spaceRoutes);
-
-<<<<<<< HEAD
+app.use('/mibt',mbtiRoutes);
 
 app.use('/api/space', spaceRoutes);
 
 
 app.use('/profile', userProfie);
-=======
-app.use("/profile", userProfie);
->>>>>>> 2fecd61bb28e59333692a98f4a996e9c370aba22
 
 app.use((error, req, res, next) => {
   if (error instanceof multer.MulterError) {
@@ -63,5 +58,5 @@ app.use((error, req, res, next) => {
   res.status(500).json({ error: error.message });
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

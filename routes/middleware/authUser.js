@@ -1,9 +1,8 @@
 import jwt from 'jsonwebtoken';
 
 const authenticateUser = (req, res, next) => {
-  // Get the token from the Authorization header
   const token = req.headers['authorization']?.split(' ')[1]; // Extract token
-
+  console.log(String(token));
   if (!token) {
     return res.status(401).json({ error: 'Please authenticate.' });
   }
