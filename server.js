@@ -6,19 +6,27 @@ import authRoutes from "./routes/auth.js";
 import userProfie from "./routes/userRoute.js";
 import spaceRoutes from "./routes/spaceRoutes.js";
 import multer from "multer";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
 const app = express();
 
+// Middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
     credentials: true,
+    origin: "*", // Adjust origin for production
   })
 );
-app.use(express.urlencoded({ extended: true }));
 
+// MongoDB Connection
 const mongoURI = process.env.MONGODB_URI;
 if (!mongoURI) {
   console.error(
@@ -32,21 +40,15 @@ mongoose
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
+// Static file serving for images
+app.use("/uploads", express.static(path.join(__dirname, "uploads"))); // This is correct
+
+// Routes
 app.use("/api/auth", authRoutes);
-app.use("/uploads/", express.static("uploads"));
-
-app.use("/api", spaceRoutes);
-
-<<<<<<< HEAD
-
-app.use('/api/space', spaceRoutes);
-
-
-app.use('/profile', userProfie);
-=======
+app.use("/api/space", spaceRoutes); // Ensure `spaceRoutes` handles "/create", "/get", etc.
 app.use("/profile", userProfie);
->>>>>>> 2fecd61bb28e59333692a98f4a996e9c370aba22
 
+// Multer error handling middleware
 app.use((error, req, res, next) => {
   if (error instanceof multer.MulterError) {
     if (error.code === "LIMIT_FILE_SIZE") {
@@ -63,5 +65,6 @@ app.use((error, req, res, next) => {
   res.status(500).json({ error: error.message });
 });
 
+// Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
