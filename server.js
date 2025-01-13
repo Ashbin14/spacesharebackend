@@ -42,6 +42,9 @@ app.use('/api/space', spaceRoutes);
 
 app.use('/profile', userProfie);
 
+app.set('view engine', 'ejs');
+app.set('views', './views');
+
 app.use((error, req, res, next) => {
   if (error instanceof multer.MulterError) {
     if (error.code === "LIMIT_FILE_SIZE") {
@@ -58,5 +61,5 @@ app.use((error, req, res, next) => {
   res.status(500).json({ error: error.message });
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
