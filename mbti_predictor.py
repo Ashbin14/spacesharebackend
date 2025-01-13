@@ -1,10 +1,11 @@
+import json
 import numpy as np
 import sys
 
 class DecisionNode:
     def __init__(self, threshold=50):
         self.threshold = threshold
-        
+
 class MBTIPredictor:
     def __init__(self):
         """Initialize the MBTI personality predictor."""
@@ -47,7 +48,7 @@ class MBTIPredictor:
             'ENFJ': {'Leadership': 0.9, 'Empathy': 0.9, 'Support': 0.8, 'Vision': 0.7},
             'ENTJ': {'Leadership': 0.9, 'Strategy': 0.9, 'Logic': 0.8, 'Efficiency': 0.7}
         }
-    
+
     def normalize_score(self, score):
         return min(max(float(score), 0), 100)
     
@@ -113,7 +114,7 @@ class MBTIPredictor:
     def predict_personality(self, input_scores):
         if len(input_scores) != 4:
             raise ValueError("Must provide exactly 4 scores (E/I, S/N, T/F, J/P)")
-        
+
         normalized_scores = [self.normalize_score(score) for score in input_scores]
         binary_preferences = [1 if score > node.threshold else 0 
                             for score, node in zip(normalized_scores, self.nodes)]
@@ -162,7 +163,7 @@ def format_analysis(analysis):
     for trait, score in analysis['personality_scores']['dominant_traits']:
         output.append(f"{trait}: {score}%")
     
-    output.extend([
+    output.extend([        
         "\nPreference Breakdown:",
         "-------------------"
     ])
@@ -189,32 +190,19 @@ def format_analysis(analysis):
         output.append(f"{i}. {fn} - {desc}")
     
     return "\n".join(output)
-
 def main():
-    # predictor = MBTIPredictor()
-    
-    
-    
-    # try:
-    #     result = predictor.predict_personality(sample_scores)
-    #     print(format_analysis(result))
-    # except Exception as e:
-    #     print(f"Error: {e}")
-
-   if __name__ == "__main__":
     predictor = MBTIPredictor()
-    
-    # Check if scores are provided as command line arguments
     if len(sys.argv) > 1:
         try:
             scores = [float(arg) for arg in sys.argv[1:5]]
             result = predictor.predict_personality(scores)
-            print(format_analysis(result))
+            print(json.dumps(result, indent=4))  # Output result as JSON
         except Exception as e:
             print(f"Error: {str(e)}", file=sys.stderr)
             sys.exit(1)
     else:
-        # Use sample scores if no arguments provided
         sample_scores = [50, 50, 50, 50]
-        result = predictor.predict_personality(sample_scores)
-        print(format_analysis(result))
+        result = predictor.predict_personality
+
+if __name__ == "__main__":
+    main()
