@@ -1,11 +1,12 @@
 import express from 'express';
 import authController from '../controllers/authController.js';
 import auth from '../middleware/auth.js';
+import { upload } from '../config/multerUser.js';
 
 const router = express.Router();
 
 router.post('/login', authController.login);
-router.post('/register', authController.register);
+router.post('/register',upload.array('images',5), authController.register);
 router.post('/logout',authController.logout);
 
 router.get('/me', auth, async (req, res) => {
