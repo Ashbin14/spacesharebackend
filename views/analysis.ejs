@@ -1,18 +1,64 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Analysis Details</title>
+    <title>My Analyses</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f8ff;
+            color: #333;
+        }
+        .analysis-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .analysis-card {
+            border: 2px solid #4caf50;
+            border-radius: 12px;
+            padding: 16px;
+            width: calc(33.33% - 20px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            background-color: #e8f5e9;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .analysis-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        .analysis-card h2 {
+            font-size: 1.4rem;
+            margin-bottom: 8px;
+            color: #2e7d32;
+        }
+        .analysis-card p {
+            margin: 6px 0;
+            color: #555;
+        }
+        .no-data {
+            font-size: 1.4rem;
+            color: #b71c1c;
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
-  <h1>Analysis Details</h1>
-
-  <p><strong>Analysis ID:</strong> <%= analysis._id %></p>
-  <p><strong>Personality Type:</strong> <%= analysis.personalityType %></p>
-  <p><strong>Overall Personality Score:</strong> <%= analysis.overallPersonalityScore %></p>
-  <p><strong>Additional Details:</strong> <%= analysis.details %></p>
-
-  <a href="/my-analyses">Back to All Analyses</a>
+    <h1 style="color: #1b5e20; text-align: center;">My MBTI Analyses</h1>
+    <% if (analyses.length > 0) { %>
+        <div class="analysis-container">
+            <% analyses.forEach(analysis => { %>
+                <div class="analysis-card">
+                    <h2>Type: <%= analysis.type %></h2>
+                    <p><strong>Overall Personality Score:</strong> <%= analysis.overallPersonalityScore %></p>
+                    <p><strong>Preference Alignment:</strong> <%= analysis.preferenceAlignment %></p>
+                    <p><strong>Date:</strong> <%= new Date(analysis.createdAt).toLocaleDateString() %></p>
+                </div>
+            <% }); %>
+        </div>
+    <% } else { %>
+        <p class="no-data">No analyses found.</p>
+    <% } %>
 </body>
 </html>

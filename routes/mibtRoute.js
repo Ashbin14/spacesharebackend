@@ -11,11 +11,10 @@ router.get('/analysis/:id', authMiddleware, personalityController.getAnalysisByI
 
 router.get('/my-analyses', authMiddleware, async (req, res) => {
     try {
-        const analyses = await MBTIAnalysis.find({ userId: req.user.id })
+        const analyses = await MBTIAnalysis.find({ userId: req.user.userId })
             .sort({ createdAt: -1 });
 
-        // Render the EJS template and pass the data to it
-        res.render('analysis', { analyses });
+        res.json( analyses );
     } catch (error) {
         res.status(500).json({
             error: 'Failed to fetch analyses',
